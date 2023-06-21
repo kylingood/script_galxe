@@ -29,6 +29,13 @@ const claim = async (wallet: ethers.Wallet) => {
   })
 };
 
+if (!cfg.campaignId || !cfg.w) {
+  console.error(
+    "❌ 请在config.ts中配置对应参数",
+  );
+  process.exit(1);
+}
+
 cli(async ({ action, pks, startIdx, endIdx }) => {
   for (let k = startIdx; k <= endIdx; k++) {
     const pk = pks[k];

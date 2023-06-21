@@ -1,6 +1,6 @@
 # Galex 相关脚本
 
-- 当前包含 `claim` 和 `geetest` 脚本
+- 当前包含任务 `claim` 和 破解`geetest` 脚本
 - 后续计划加入更多galex功能脚本
   - 绑定twitter
   - 绑定邮箱
@@ -29,7 +29,7 @@ npm install # 安装依赖
 
 调整 `config.ts` 文件的两个配置:
 
-- campaignId: 例如 https://galxe.com/Linea/campaign/GCw91UQDkQ，campaignId就是GCw91UQDkQ
+- campaignId: 例如 https://galxe.com/Linea/campaign/GCw91UQDkQ, campaignId就是 `GCw91UQDkQ`
 
 - w: geetest验证参数，运行前记得更新(一天一次即可)，获取方式见下图
 
