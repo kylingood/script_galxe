@@ -1,6 +1,8 @@
 # Galex 相关脚本
 
-- 当前包含任务 `claim` 和 破解`geetest` 脚本
+- 包含任务 `claim` 脚本
+- 包含破解 `geetest` 脚本
+- 包含获取银河 `passport widget url` 脚本 `pnpm task -a passport`
 - 后续计划加入更多galex功能脚本
   - 绑定twitter
   - 绑定邮箱
