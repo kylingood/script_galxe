@@ -11,6 +11,8 @@ const signInQuery = (p: { address: string; message: string; signature: string })
 // Claim
 const prepareParticipateQuery = (p: { address: string; campaignID: string; chain: string; mintCount?: number; signature?: string; captcha: Captcha }) => ({ "operationName": "PrepareParticipate", "variables": { "input": { mintCount: 1, signature: '', ...p } }, "query": "mutation PrepareParticipate($input: PrepareParticipateInput!) {\n  prepareParticipate(input: $input) {\n    allow\n    disallowReason\n    signature\n    nonce\n    mintFuncInfo {\n      funcName\n      nftCoreAddress\n      verifyIDs\n      powahs\n      cap\n      __typename\n    }\n    extLinkResp {\n      success\n      data\n      error\n      __typename\n    }\n    metaTxResp {\n      metaSig2\n      autoTaskUrl\n      metaSpaceAddr\n      forwarderAddr\n      metaTxHash\n      reqQueueing\n      __typename\n    }\n    solanaTxResp {\n      mint\n      updateAuthority\n      explorerUrl\n      signedTx\n      verifyID\n      __typename\n    }\n    aptosTxResp {\n      signatureExpiredAt\n      tokenName\n      __typename\n    }\n    tokenRewardCampaignTxResp {\n      signatureExpiredAt\n      verifyID\n      __typename\n    }\n    loyaltyPointsTxResp {\n      TotalClaimedPoints\n      __typename\n    }\n    __typename\n  }\n}\n" })
 
+const getOrCreateInquiryByAddress = (p: { address: string; signature: string }) => ({"operationName":"GetOrCreateInquiryByAddress","variables":{"input":{"address":p.address.toLocaleLowerCase(),"signature":p.signature}},"query":"mutation GetOrCreateInquiryByAddress($input: GetOrCreateInquiryByAddressInput!) {\n  getOrCreateInquiryByAddress(input: $input) {\n    status\n    vendor\n    personaInquiry {\n      inquiryID\n      sessionToken\n      declinedReason\n      __typename\n    }\n    __typename\n  }\n}\n"})
+
 export class Galex {
   public req: ReturnType<typeof axios.create>;
   public wallet: ethers.Wallet;
@@ -69,6 +71,15 @@ export class Galex {
       proxy: this.proxy,
     })
     const res = await this.req.post('/query', prepareParticipateQuery({ address, captcha, ...rest }))
+    return res.data.data
+  }
+
+  async getOrCreateInquiryByAddress(p: { signature: string }) {
+    if (!this.token) {
+      await this.login()
+    }
+    const address = this.wallet.address;
+    const res = await this.req.post('/query', getOrCreateInquiryByAddress({ address, ...p}))
     return res.data.data
   }
 }

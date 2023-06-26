@@ -4,7 +4,7 @@
  * Author @3lang3 2023-06-21
  * Github: https://github.com/3lang3
  */
-
+import fs from 'fs';
 import { ethers } from "ethers";
 import { cli } from "./utils/cli";
 import { Galex } from "./module";
@@ -29,11 +29,28 @@ const claim = async (wallet: ethers.Wallet) => {
   })
 };
 
-if (!cfg.campaignId || !cfg.w) {
-  console.error(
-    "❌ 请在config.ts中配置对应参数",
-  );
-  process.exit(1);
+// 获取widget containerId
+function containerId() {
+  return "persona-widget-" + new Array(16).fill(void 0).map((function () {
+    return Math.floor(35 * Math.random()).toString(35)
+  }
+  )).join("")
+}
+
+// 获取widget url
+const getPassportUrl = async (wallet: ethers.Wallet) => {
+  const account = new Galex({ privateKey: wallet.privateKey });
+  const signature = await wallet.signMessage(`get_or_create_address_inquiry:${wallet.address.toLocaleLowerCase()}`)
+  await loop(async () => {
+    const { getOrCreateInquiryByAddress } = await account.getOrCreateInquiryByAddress({ signature });
+    const { sessionToken, inquiryID } = getOrCreateInquiryByAddress.personaInquiry
+    if (sessionToken) {
+      const url = `https://withpersona.com/widget?client-version=4.7.1&container-id=${containerId()}&flow-type=embedded&environment=production&iframe-origin=https%3A%2F%2Fgalxe.com&inquiry-id=${inquiryID}&session-token=${sessionToken}`
+      // 将url存入 urls.txt 文件
+      fs.appendFileSync('urls.txt', `[${wallet.address}]${url}\n`);
+      return;
+    }
+  })
 }
 
 cli(async ({ action, pks, startIdx, endIdx }) => {
@@ -41,9 +58,24 @@ cli(async ({ action, pks, startIdx, endIdx }) => {
     const pk = pks[k];
     const wallet = new ethers.Wallet(pk);
     try {
-      console.log(`[${action}] ${wallet.address} 开始执行claim`)
-      await claim(wallet);
-      console.log(`[${action}] ${wallet.address} claim执行完毕`)
+      if (action === 'claim') {
+        if (!cfg.campaignId || !cfg.w) {
+          console.error(
+            "❌ 请在config.ts中配置对应参数",
+          );
+          process.exit(1);
+        }
+        console.log(`[${action}] ${wallet.address} 开始执行claim`)
+        await claim(wallet);
+        console.log(`[${action}] ${wallet.address} claim执行完毕`)
+      }
+
+      if (action === 'passport') {
+        console.log(`[${action}] ${wallet.address} 开始获取passport url`)
+        await getPassportUrl(wallet);
+        console.log(`[${action}] ${wallet.address} passport url获取完毕`)
+      }
+
     } catch (error) {
       console.log(error?.reason || error?.message)
     }
